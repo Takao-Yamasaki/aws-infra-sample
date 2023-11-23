@@ -78,13 +78,13 @@ resource "aws_route" "sample-public" {
 # パブリックルートテーブルの関連付け
 resource "aws_route_table_association" "sample-public01" {
   subnet_id = aws_subnet.sample-subnet-public01.id
-  route_table_id = aws_route.sample-public.id
+  route_table_id = aws_route_table.sample-rt-public.id
 }
 
 # パブリックルートテーブルの関連付け
 resource "aws_route_table_association" "sample-public02" {
   subnet_id = aws_subnet.sample-subnet-public02.id
-  route_table_id = aws_route.sample-public.id
+  route_table_id = aws_route_table.sample-rt-public.id
 }
 
 # プライベートルートテーブル
@@ -95,13 +95,13 @@ resource "aws_route_table" "sample-rt-private01" {
 # プライベートルートテーブルの関連付け
 resource "aws_route_table_association" "sample-private01" {
   subnet_id = aws_subnet.sample-subnet-private01.id
-  route_table_id = aws_route.sample-public.id
+  route_table_id = aws_route_table.sample-rt-private01.id
 }
 
 # プライベートルートテーブルのルート（デフォルトルートの設定）
 # NAT経由でInternetへデータを流す
 resource "aws_route" "sample-private01" {
-  route_table_id = aws_route_table.sample-rt-public.id
+  route_table_id = aws_route_table.sample-rt-private01.id
   gateway_id = aws_nat_gateway.sample-ngw-01.id
   destination_cidr_block = "0.0.0.0/0"
 }
@@ -134,4 +134,32 @@ resource "aws_security_group_rule" "egress_sample_sg_bastion" {
   protocol = "-1"
   cidr_blocks = ["0.0.0.0/0"]
   security_group_id = aws_security_group.sample_sg_bastion.id
+}
+
+# セキュリティグループの定義(VPC内全てのリソースの通信を許可)
+resource "aws_security_group" "sample_sg_all_intra_vpc" {
+  name = "sample_sg_all_intra_vpc"
+  description = "for all intra vpc"
+  vpc_id = aws_vpc.sample-vpc.id
+}
+
+# セキュリティグループルール（インバウンド）
+# 全ての通信を許可
+resource "aws_security_group_rule" "ingress_sample_sg_all_intra_vpc" {
+  type = "ingress"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.sample_sg_all_intra_vpc.id
+}
+
+# セキュリティグループルール（アウトバウンド）
+resource "aws_security_group_rule" "egress_sample_sg_all_intra_vpc" {
+  type = "egress"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.sample_sg_all_intra_vpc.id
 }
