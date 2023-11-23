@@ -33,5 +33,5 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-sample-ec2-bastion
-sample-ec2-bastion.pub
+ec2-bastion
+ec2-bastion.pub
